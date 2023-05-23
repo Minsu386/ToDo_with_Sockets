@@ -74,6 +74,9 @@ const todosSlice = createSlice({
     },
     TODO_DESTROY: (state, action) => {
       return state.filter(todo => todo.id !== action.payload.id);
+    },
+    TODO_UPDATE: (state, action) => {
+      return state.map( todo => todo.id === action.payload.id ? action.payload: todo); 
     }  
   },
   extraReducers: (builder)=> {

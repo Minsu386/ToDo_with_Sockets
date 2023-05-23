@@ -32,6 +32,35 @@ app.delete('/api/todos/:id', async(req, res, next)=> {
   }
 });
 
+app.post('/api/todos', async(req, res, next)=> {
+  try {
+    const todo = await Todo.create(req.body);
+    res.send(todo);
+    
+    sockets.forEach( socket => {
+      socket.send(JSON.stringify({type: 'TODO_CREATE', payload: todo}));
+    });
+  }
+  catch(ex){
+    next(ex);
+  }
+});
+
+app.put('/api/todos/:id', async(req, res, next)=> {
+  try {
+    const todo = await Todo.findByPk(req.params.id);
+    await todo.update(req.body);
+    res.send(todo);
+
+    sockets.forEach(socket=> {
+      socket.send(JSON.stringify({type: 'TODO_UPDATE', payload: todo}))
+    })
+  }
+  catch(ex){
+    next(ex);
+  }
+});
+
 app.delete('/api/categories/:id', async(req, res, next)=> {
   try {
     const category = await Category.findByPk(req.params.id);
@@ -46,19 +75,6 @@ app.delete('/api/categories/:id', async(req, res, next)=> {
   }
 });
 
-app.post('/api/todos', async(req, res, next)=> {
-  try {
-    const todo = await Todo.create(req.body);
-    res.send(todo);
-
-    sockets.forEach( socket => {
-      socket.send(JSON.stringify({type: 'TODO_CREATE', payload: todo}));
-    });
-  }
-  catch(ex){
-    next(ex);
-  }
-});
 
 app.post('/api/categories', async(req, res, next)=> {
   try {
@@ -73,17 +89,18 @@ app.post('/api/categories', async(req, res, next)=> {
     next(ex);
   }
 });
-
-app.put('/api/todos/:id', async(req, res, next)=> {
+app.put('/api/categories/:id', async(req, res, next)=> {
   try {
-    const todo = await Todo.findByPk(req.params.id);
-    await todo.update(req.body);
-    res.send(todo);
+    const category = await Category.findByPk(req.params.id);
+    sockets.forEach(socket => {
+      socket.send(JSON.stringify({type: 'CATEGORY_UPDATE', payload: category}))
+    })
   }
   catch(ex){
     next(ex);
   }
 });
+
 
 app.get('/api/categories', async(req, res, next)=> {
   try {
